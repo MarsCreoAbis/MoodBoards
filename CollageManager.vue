@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import html2canvas from 'html2canvas' // Import html2canvas
 
 // Define Props from parent
 const props = defineProps({
@@ -49,6 +50,29 @@ function arrangeCollage() {
     }
   })
 }
+
+// Download Collage as PNG
+function downloadCollage() {
+  if (!collageGrid.value) return
+
+  // Use html2canvas to capture the collage area
+  html2canvas(collageGrid.value, {
+    useCORS: true, // Allow cross-origin images
+    scale: 2, // Maintain original size
+    logging: true, // Optional: Enable logging for debugging
+    allowTaint: true, // Allow tainted images (if CORS is not enabled)
+    backgroundColor: null, // Ensure transparent background
+  }).then((canvas) => {
+    // Convert canvas to PNG image
+    const image = canvas.toDataURL('image/png')
+
+    // Create a temporary link to trigger the download
+    const link = document.createElement('a')
+    link.href = image
+    link.download = 'collage.png' // Set the file name
+    link.click() // Trigger the download
+  })
+}
 </script>
 
 <template>
@@ -73,6 +97,11 @@ function arrangeCollage() {
 
     <!-- Generate Collage Button -->
     <button @click="arrangeCollage">Generate</button>
+
+    <!-- Download Collage Button -->
+    <button @click="downloadCollage" v-if="selectedImagesForCollage.length > 0">
+      Download Collage
+    </button>
 
     <!-- Collage Display (Dynamic Grid) -->
     <div v-if="selectedImagesForCollage.length > 0" ref="collageGrid" class="collage-grid">
@@ -158,9 +187,5 @@ button {
 
 .collage-item.vertical {
   grid-row: span 2; /* Vertical images span 2 rows */
-}
-
-.collage-item.square {
-  /* Square images remain as-is */
 }
 </style>

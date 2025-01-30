@@ -44,6 +44,16 @@ function handleImageSelectedForCollage(imageUrl) {
 }
 </script>
 
+<script>
+export default {
+  methods: {
+    goToSubPage() {
+      this.$router.push('/SubPage.vue')
+    },
+  },
+}
+</script>
+
 <template>
   <div id="app">
     <!-- Main Page Content -->
@@ -52,6 +62,7 @@ function handleImageSelectedForCollage(imageUrl) {
       <button @click="toggleMain2">START</button>
       <main>
         <h2>Lawful Good Moodboarding Machine</h2>
+        <button @click="goToSubPage">Your Account</button>
       </main>
     </header>
 
