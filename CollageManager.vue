@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 // Define Props from parent
 const props = defineProps({
@@ -15,27 +15,37 @@ function toggleImageSelection(imageUrl) {
   emit('image-selected-for-collage', imageUrl)
 }
 
-// Generate the collage from selected images
-function generateCollage() {
-  const canvas = document.getElementById('collageCanvas')
-  const ctx = canvas.getContext('2d')
+// Dynamic collage layout
+const collageGrid = ref(null)
 
-  const canvasWidth = 800
-  const canvasHeight = 600
-  const imageWidth = 200
-  const imageHeight = 200
+onMounted(() => {
+  if (collageGrid.value) {
+    arrangeCollage()
+  }
+})
 
-  canvas.width = canvasWidth
-  canvas.height = canvasHeight
+function arrangeCollage() {
+  const grid = collageGrid.value
+  if (!grid) return
 
-  props.selectedImagesForCollage.forEach((imageUrl, index) => {
-    const img = new Image()
-    img.src = imageUrl
+  // Reset the grid
+  grid.style.gridAutoRows = 'auto'
+  grid.style.gap = '10px'
 
+  // Arrange images dynamically
+  const images = grid.querySelectorAll('.collage-item img')
+  images.forEach((img) => {
     img.onload = () => {
-      const xPos = (index % 4) * imageWidth
-      const yPos = Math.floor(index / 4) * imageHeight
-      ctx.drawImage(img, xPos, yPos, imageWidth, imageHeight)
+      const aspectRatio = img.naturalWidth / img.naturalHeight
+
+      // Classify images as vertical, horizontal, or square-like
+      if (aspectRatio > 1.2) {
+        img.parentElement.classList.add('horizontal')
+      } else if (aspectRatio < 0.8) {
+        img.parentElement.classList.add('vertical')
+      } else {
+        img.parentElement.classList.add('square')
+      }
     }
   })
 }
@@ -43,12 +53,12 @@ function generateCollage() {
 
 <template>
   <div>
-    <h3>Your Collage</h3>
+    <h3>Your MOODBOARD</h3>
 
-    <!-- Saved Images Display -->
+    <!-- Saved Images Display (Squares) -->
     <div class="saved-images-preview">
-      <h4>Saved Images</h4>
-      <div class="image-gallery">
+      <h4>The Chosen</h4>
+      <div class="collage-grid">
         <div
           v-for="(image, index) in savedImages"
           :key="index"
@@ -62,47 +72,95 @@ function generateCollage() {
     </div>
 
     <!-- Generate Collage Button -->
-    <button @click="generateCollage">Generate Collage</button>
+    <button @click="arrangeCollage">Generate</button>
 
-    <!-- Collage Canvas -->
-    <canvas id="collageCanvas"></canvas>
+    <!-- Collage Display (Dynamic Grid) -->
+    <div v-if="selectedImagesForCollage.length > 0" ref="collageGrid" class="collage-grid">
+      <div v-for="(image, index) in selectedImagesForCollage" :key="index" class="collage-item">
+        <img :src="image" :alt="'Collage image ' + (index + 1)" />
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
+/* Saved Images Display (Squares) */
 .saved-images-preview {
   margin-top: 20px;
 }
 
 .saved-images-preview .image-gallery {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Fluid grid */
+  gap: 10px; /* Constant margin between images */
 }
 
-.saved-images-preview img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
+.saved-images-preview .image-item {
+  width: 150px;
+  height: 150px;
+  overflow: hidden; /* Ensure images are cropped to squares */
   border-radius: 10px;
   cursor: pointer;
 }
 
-.image-item.selected {
-  border: 3px solid #42b983;
+.saved-images-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Crop images to fit squares */
+  border-radius: 10px;
 }
 
+.image-item.selected {
+  border: 3px solid #2c5530;
+}
+
+/* Generate Collage Button */
 button {
-  margin-top: 10px;
-  padding: 5px;
-  background-color: #42b983;
+  margin: 20px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background-color: #2c5530;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-button:hover {
-  background-color: #369972;
+/* Collage Grid (Dynamic Layout) */
+.collage-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Fluid grid */
+  grid-auto-rows: 200px; /* Fixed row height */
+  gap: 10px; /* Constant margin between images */
+  max-width: 1200px; /* Limit the width of the collage */
+  margin: 0 auto; /* Center the collage */
+}
+
+.collage-item {
+  position: relative;
+  overflow: hidden; /* Ensure images are cropped to fit */
+  border-radius: 10px;
+}
+
+.collage-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Crop images to fit the grid cells */
+  border-radius: 10px;
+}
+
+/* Dynamic Sizing Based on Aspect Ratio */
+.collage-item.horizontal {
+  grid-column: span 2; /* Horizontal images span 2 columns */
+}
+
+.collage-item.vertical {
+  grid-row: span 2; /* Vertical images span 2 rows */
+}
+
+.collage-item.square {
+  /* Square images remain as-is */
 }
 </style>

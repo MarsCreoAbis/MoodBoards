@@ -34,8 +34,8 @@ async function searchPhotos() {
 }
 
 // Add photo to collage and emit to parent
-function addToCollage(imageUrl) {
-  emit('image-added', imageUrl)
+function addToCollage(photo) {
+  emit('image-added', photo.urls.full) // Use the full-size image URL
 }
 
 // Fetch related keywords based on the current search query
@@ -88,56 +88,136 @@ watch(
 </script>
 
 <template>
-  <div>
-    <h2>Image Search</h2>
+  <div class="image-search">
+    <h2>Choose the mood of your board...</h2>
 
     <!-- Search Input -->
-    <div>
+    <div class="search-container">
       <input v-model="localQuery" @input="searchPhotos" placeholder="Enter a keyword" />
       <button @click="searchPhotos">Search</button>
     </div>
 
     <!-- Photos Display -->
-    <div v-for="photo in photosFromAPI" :key="photo.id" class="photo-card">
-      <img :src="photo.urls.small" :alt="photo.alt_description" />
-      <button @click="addToCollage(photo.urls.small)">Add to Collage</button>
-      <button @click="fetchAssociatedWord" v-if="suggestionCount < maxSuggestions">
-        Suggest Related
-      </button>
+    <div class="photo-grid">
+      <div v-for="photo in photosFromAPI" :key="photo.id" class="photo-card">
+        <img :src="photo.urls.small" :alt="photo.alt_description" />
+        <div class="button-group">
+          <button @click="addToCollage(photo)">Add to Board</button>
+          <button @click="fetchAssociatedWord" v-if="suggestionCount < maxSuggestions">
+            Suggest Related
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* Styling for images and collage */
-.photo-card {
-  width: 150px;
-  height: 150px;
-  margin: 10px;
+/* General Styling */
+.image-search {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow: hidden; /* Prevent horizontal overflow */
+}
+
+h2 {
+  margin-bottom: 20px;
+  font-style: oblique;
+  font-size: 1.5rem;
+  color: #5c8038;
+}
+
+/* Search Input Styling */
+.search-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-.photo-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
+input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  flex: 1;
+  max-width: 100%; /* Ensure input doesn't overflow */
 }
 
-button {
-  margin-top: 10px;
-  padding: 5px;
-  background-color: #42b983;
+button[type='button'] {
+  padding: 10px 20px;
+  background-color: #2c5530;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
+button[type='button']:hover {
+  background-color: #5c8038;
+}
+
+/* Photos Display */
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* Increased spacing between cards */
+  justify-content: center; /* Center cards in the grid */
+}
+
+.photo-card {
+  width: calc(33.333% - 14px); /* 3 cards per row with spacing */
+  max-width: 100%; /* Ensure cards don't overflow */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.photo-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px 10px 0 0;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Increased spacing between buttons */
+  padding: 15px;
+  width: 100%;
+}
+
+button {
+  padding: 10px;
+  background-color: #2c5530;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
 button:hover {
-  background-color: #369972;
+  background-color: #5c8038;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .photo-card {
+    width: calc(50% - 10px); /* 2 cards per row on smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .photo-card {
+    width: 100%; /* 1 card per row on mobile */
+  }
 }
 </style>

@@ -48,8 +48,11 @@ function handleImageSelectedForCollage(imageUrl) {
   <div id="app">
     <!-- Main Page Content -->
     <header class="main-header">
-      <h1>Moodboard Maker</h1>
+      <h1>Moodboarder 3000</h1>
       <button @click="toggleMain2">START</button>
+      <main>
+        <h2>Lawful Good Moodboarding Machine</h2>
+      </main>
     </header>
 
     <!-- Embedded Subpage (Appears Below When Toggled) -->
@@ -76,13 +79,29 @@ function handleImageSelectedForCollage(imageUrl) {
 .main-header {
   text-align: center;
   padding: 2rem;
-  background-color: #42b983;
+  background-color: #2c5530;
   color: white;
+}
+
+button {
+  margin: 7px;
+  margin-right: 3px;
+  padding: 7px;
+  background-color: #5c8038;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 main {
   padding: 2rem;
   text-align: center;
+}
+
+h1 {
+  color: white;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 
 /* Main2.vue Container */
